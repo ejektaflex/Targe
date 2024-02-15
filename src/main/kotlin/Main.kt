@@ -1,19 +1,23 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.kamel.core.config.KamelConfig
@@ -123,7 +127,7 @@ fun SmallTopAppBarExample() {
 @Composable
 fun TagImageSelector() {
 
-    val numCols = 4
+    val numCols = 6
     val numRows = ceil(imgFiles.size.toDouble() / numCols).toInt()
 
     // 75/4
@@ -141,7 +145,9 @@ fun TagImageSelector() {
 //                loadImageBitmap(element.inputStream()),
 //                "Gallery Image: ${element.path}"
 //            )
-            KamelImage(res, "Yeet")
+            Box(Modifier.padding(5.dp).clip(RoundedCornerShape(15.dp)).fillMaxWidth()) {
+                KamelImage(res, "Yeet")
+            }
 //            AsyncImage(
 //                load = {
 //                    loadImageBitmap(element.inputStream())
