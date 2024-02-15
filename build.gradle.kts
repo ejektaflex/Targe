@@ -20,6 +20,9 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+    //implementation("io.coil-kt:coil:2.5.0")
+    implementation("media.kamel:kamel-image:0.9.1")
+    implementation("io.ktor:ktor-client-apache5:2.3.8")
 }
 
 compose.desktop {

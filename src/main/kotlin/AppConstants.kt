@@ -6,4 +6,8 @@ object AppConstants {
         val White = Color(0xeeeeee)
         val TextDark = Color(24, 24, 24)
     }
+
+    object DataLoading {
+        val allowedMedia = mutableSetOf("jpg", "jpeg", "png")
+    }
 }
