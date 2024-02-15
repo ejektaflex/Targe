@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -28,11 +30,15 @@ import coil3.PlatformContext
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okio.Path.Companion.toPath
 import java.io.File
 import java.io.IOException
+import java.nio.file.Paths
 import kotlin.math.ceil
 
 
@@ -42,11 +48,7 @@ val imgFiles = testDataSet.walk().toList().filter {
     it.isFile && it.extension in AppConstants.DataLoading.allowedMedia
 }
 
-//val desktopConfig = KamelConfig {
-//    takeFrom(KamelConfig.Default)
-//    // Available only on Desktop.
-//    resourcesFetcher()
-//}
+
 
 @Composable
 @Preview
@@ -102,7 +104,9 @@ fun SmallTopAppBarExample() {
                     Text("Targe - Gallery")
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = {
+                        println("Doot!")
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Menu,
                             contentDescription = "Menu Here"
@@ -130,6 +134,20 @@ fun SmallTopAppBarExample() {
 @Composable
 fun TagImageSelector() {
 
+    val imageLoader = ImageLoader.Builder(PlatformContext.INSTANCE)
+        .memoryCache {
+            MemoryCache.Builder()
+                .maxSizePercent(PlatformContext.INSTANCE, 0.25)
+                .build()
+        }
+        .diskCache {
+            DiskCache.Builder()
+                .directory("img_cache".toPath())
+                .maxSizePercent(0.02)
+                .build()
+        }
+        .build()
+
     val numCols = 3
     val numRows = ceil(imgFiles.size.toDouble() / numCols).toInt()
 
@@ -140,25 +158,32 @@ fun TagImageSelector() {
 
     val loc = "file://" + imgFiles[1].absolutePath.replace("\\", "/") // .replace("/", "\\")
 
-
-
     LazyVerticalGrid(
-        columns = GridCells.Fixed(numCols)
+        columns = GridCells.Adaptive(128.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.Center
     ) {
-
-
 
         items(imgFiles.size) {
 
             val coilFile = remember { imgFiles[it].toCoilFile() }
 
-            Box(Modifier.padding(5.dp).clip(RoundedCornerShape(15.dp)).fillMaxWidth()) {
-                AsyncImage(
+            Box(Modifier.padding(5.dp).fillMaxSize()) {
 
-                    model = coilFile,
+                AsyncImage(
+                    modifier = Modifier.clip(RoundedCornerShape(5.dp)),
+                    model = ImageRequest.Builder(LocalPlatformContext.current)
+                        .data(coilFile)
+                        .build(),
                     contentDescription = null,
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.Fit,
                 )
+
+//                AsyncImage(
+//                    model = coilFile,
+//                    contentDescription = null,
+//                    contentScale = ContentScale.FillBounds,
+//                )
             }
 
 //            AsyncImage(
