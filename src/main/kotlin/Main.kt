@@ -1,10 +1,12 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -20,13 +23,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import io.kamel.core.config.KamelConfig
-import io.kamel.core.config.takeFrom
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import io.kamel.image.config.Default
-import io.kamel.image.config.batikSvgDecoder
-import io.kamel.image.config.resourcesFetcher
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -124,30 +126,41 @@ fun SmallTopAppBarExample() {
     }
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun TagImageSelector() {
 
-    val numCols = 6
+    val numCols = 3
     val numRows = ceil(imgFiles.size.toDouble() / numCols).toInt()
+
 
     // 75/4
 
     println(imgFiles.size)
 
+    val loc = "file://" + imgFiles[1].absolutePath.replace("\\", "/") // .replace("/", "\\")
+
+
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(numCols)
     ) {
 
+
+
         items(imgFiles.size) {
-            val element = remember { imgFiles[it] }
-            val res = asyncPainterResource(element)
-//            Image(
-//                loadImageBitmap(element.inputStream()),
-//                "Gallery Image: ${element.path}"
-//            )
+
+            val coilFile = remember { imgFiles[it].toCoilFile() }
+
             Box(Modifier.padding(5.dp).clip(RoundedCornerShape(15.dp)).fillMaxWidth()) {
-                KamelImage(res, "Yeet")
+                AsyncImage(
+
+                    model = coilFile,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds
+                )
             }
+
 //            AsyncImage(
 //                load = {
 //                    loadImageBitmap(element.inputStream())
@@ -221,4 +234,7 @@ fun <T> AsyncImage(
     }
 }
 
+fun File.toCoilFile(): String {
+    return "file://" + absolutePath.replace("\\", "/")
+}
 

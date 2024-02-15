@@ -15,13 +15,22 @@ repositories {
 }
 
 dependencies {
+
+    //
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
+
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    //implementation("io.coil-kt:coil:2.5.0")
-    implementation("media.kamel:kamel-image:0.9.1")
+    //implementation("media.kamel:kamel-image:0.9.1")
+
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha04")
+
+    //implementation("io.coil-kt.coil3:coil-network-okhttp:[coil-version]")
+
     implementation("io.ktor:ktor-client-apache5:2.3.8")
 }
 
