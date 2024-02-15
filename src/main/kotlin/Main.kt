@@ -1,46 +1,27 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import coil3.ImageLoader
-import coil3.PlatformContext
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import coil3.disk.DiskCache
-import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okio.Path.Companion.toPath
 import java.io.File
-import java.io.IOException
-import java.nio.file.Paths
-import kotlin.math.ceil
-
 
 val testDataSet = File("test_data/odas")
 
@@ -48,6 +29,9 @@ val imgFiles = testDataSet.walk().toList().filter {
     it.isFile && it.extension in AppConstants.DataLoading.allowedMedia
 }
 
+val testTagNames = listOf(
+    "Person", "Location", "Item", "Landscape", "Portrait", "Still Life"
+)
 
 
 @Composable
@@ -80,7 +64,9 @@ fun App() {
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "Targe") {
-        SmallTopAppBarExample()
+        MaterialTheme {
+            SmallTopAppBarExample()
+        }
     }
 }
 
@@ -123,29 +109,58 @@ fun SmallTopAppBarExample() {
 @Composable
 fun ScreenGallery() {
     Row(Modifier.fillMaxSize()) {
+        Column(Modifier.requiredWidth(320.dp)) {
+            GalleryControls()
+        }
         Column(Modifier.weight(2f)) {
             TagImageSelector()
-        }
-        Column(Modifier.requiredWidth(512.dp)) {
-            Text("Col 2")
         }
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenTaggerGallery() {
-    Row(Modifier.fillMaxSize()) {
-        Column(Modifier.weight(2f)) {
-            TagImageSelector()
+fun GalleryControls() {
+    Column(Modifier.padding(5.dp)) {
+        Row(Modifier.padding(5.dp)) {
+            var text by remember { mutableStateOf("") }
+            var active by remember { mutableStateOf(false) }
+
+            OutlinedTextField(text, onValueChange = { text = it }, modifier = Modifier.fillMaxWidth(), placeholder = {
+                Text("Search")
+            })
+
+//        SearchBar(text, onQueryChange = { text = it }, onSearch = { println("Searching!") }, active = active, onActiveChange = { active = it }) {
+//            Text("hi")
+//        }
+
         }
-        Column(Modifier.weight(1f)) {
-            Text("Col 2")
-        }
-        Column(Modifier.weight(1.5f)) {
-            Text("Col 3")
+
+        Row {
+
+            FilterChipExample()
+
         }
     }
 }
+
+
+
+
+//@Composable
+//fun ScreenTaggerGallery() {
+//    Row(Modifier.fillMaxSize()) {
+//        Column(Modifier.weight(2f)) {
+//            TagImageSelector()
+//        }
+//        Column(Modifier.weight(1f)) {
+//            Text("Col 2")
+//        }
+//        Column(Modifier.weight(1.5f)) {
+//            Text("Col 3")
+//        }
+//    }
+//}
 
 @Composable
 fun TagImageSelector() {
@@ -176,38 +191,32 @@ fun TagImageSelector() {
     }
 }
 
-@Composable
-fun <T> AsyncImage(
-    load: suspend () -> T,
-    painterFor: @Composable (T) -> Painter,
-    contentDescription: String,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Fit,
-) {
-    val image: T? by produceState<T?>(null) {
-        value = withContext(Dispatchers.IO) {
-            try {
-                load()
-            } catch (e: IOException) {
-                // instead of printing to console, you can also write this to log,
-                // or show some error placeholder
-                e.printStackTrace()
-                null
-            }
-        }
-    }
-
-    if (image != null) {
-        Image(
-            painter = painterFor(image!!),
-            contentDescription = contentDescription,
-            contentScale = contentScale,
-            modifier = modifier
-        )
-    }
-}
-
 fun File.toCoilFile(): String {
     return "file://" + absolutePath.replace("\\", "/")
 }
 
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun FilterChipExample() {
+    var selected by remember { mutableStateOf(false) }
+
+    FilterChip(
+        onClick = { selected = !selected },
+        selected = selected,
+        leadingIcon = if (selected) {
+            {
+                Icon(
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(ChipDefaults.LeadingIconSize)
+                )
+            }
+        } else {
+            null
+        },
+
+    ) {
+        Text("Hey")
+    }
+}

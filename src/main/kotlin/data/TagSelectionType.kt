@@ -1,7 +1,6 @@
 package data
 
-enum class TagType {
-    SINGLE,
+enum class TagSelectionType {
     SELECT,
     MULTI_SELECT
 }
