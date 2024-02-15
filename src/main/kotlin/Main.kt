@@ -116,50 +116,42 @@ fun SmallTopAppBarExample() {
             )
         },
     ) { innerPadding ->
-        Row(Modifier.fillMaxSize()) {
-            Column(Modifier.weight(2f)) {
-                TagImageSelector()
-            }
-            Column(Modifier.weight(1f)) {
-                Text("Col 2")
-            }
-            Column(Modifier.weight(1.5f)) {
-                Text("Col 3")
-            }
+        ScreenGallery()
+    }
+}
+
+@Composable
+fun ScreenGallery() {
+    Row(Modifier.fillMaxSize()) {
+        Column(Modifier.weight(2f)) {
+            TagImageSelector()
+        }
+        Column(Modifier.requiredWidth(512.dp)) {
+            Text("Col 2")
         }
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun ScreenTaggerGallery() {
+    Row(Modifier.fillMaxSize()) {
+        Column(Modifier.weight(2f)) {
+            TagImageSelector()
+        }
+        Column(Modifier.weight(1f)) {
+            Text("Col 2")
+        }
+        Column(Modifier.weight(1.5f)) {
+            Text("Col 3")
+        }
+    }
+}
+
 @Composable
 fun TagImageSelector() {
 
-    val imageLoader = ImageLoader.Builder(PlatformContext.INSTANCE)
-        .memoryCache {
-            MemoryCache.Builder()
-                .maxSizePercent(PlatformContext.INSTANCE, 0.25)
-                .build()
-        }
-        .diskCache {
-            DiskCache.Builder()
-                .directory("img_cache".toPath())
-                .maxSizePercent(0.02)
-                .build()
-        }
-        .build()
-
-    val numCols = 3
-    val numRows = ceil(imgFiles.size.toDouble() / numCols).toInt()
-
-
-    // 75/4
-
-    println(imgFiles.size)
-
-    val loc = "file://" + imgFiles[1].absolutePath.replace("\\", "/") // .replace("/", "\\")
-
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(128.dp),
+        columns = GridCells.Adaptive(256.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.Center
     ) {
@@ -179,51 +171,7 @@ fun TagImageSelector() {
                     contentScale = ContentScale.Fit,
                 )
 
-//                AsyncImage(
-//                    model = coilFile,
-//                    contentDescription = null,
-//                    contentScale = ContentScale.FillBounds,
-//                )
             }
-
-//            AsyncImage(
-//                load = {
-//                    loadImageBitmap(element.inputStream())
-//                },
-//                contentDescription = "Doot",
-//                painterFor = { remember { BitmapPainter(it) } }
-//            )
-            //asyncPainterResource(data = element)
-            //KamelImage(element, "Yeet")
-        }
-    }
-
-//    LazyColumn {
-//        for (rowIndex in 0 until numRows) {
-//            val imgStart = rowIndex * numCols
-//            val imgEnd = (imgStart + numCols).coerceAtMost(imgFiles.size)
-//            //println("From $imgStart to $imgEnd")
-//
-//            item {
-//                Row(Modifier.height(100.dp).fillMaxWidth()) {
-//                    for (imgIndex in imgStart until imgEnd) {
-//                        val imageFile = imgFiles[imgIndex]
-//                        Image(loadImageBitmap(imageFile.inputStream()), "Gallery Image: ${imageFile.path}")
-//                        //Text("Hi! $imgIndex")
-//                    }
-//                }
-//
-//            }
-//
-//        }
-//    }
-
-
-
-    Text("Col 1")
-    LazyColumn(Modifier.fillMaxSize()) {
-        item {
-            Text("Yo")
         }
     }
 }

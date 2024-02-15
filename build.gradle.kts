@@ -38,6 +38,7 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
+        // Targe, an image tagger.
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "targe"
