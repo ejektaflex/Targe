@@ -4,12 +4,16 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material3.FilterChip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -25,9 +29,17 @@ import java.io.File
 
 val testDataSet = File("test_data/odas")
 
-val imgFiles = testDataSet.walk().toList().filter {
+val allFiles = testDataSet.walk().toList()
+
+val imgFiles = allFiles.filter {
     it.isFile && it.extension in AppConstants.DataLoading.allowedMedia
 }
+
+val capFiles = allFiles.filter {
+    it.isFile && it.extension == "txt"
+}
+
+val captions = capFiles.map { it.readText().split(",").map { item -> item.trim() } }.flatten().toSet()
 
 val testTagNames = listOf(
     "Person", "Location", "Item", "Landscape", "Portrait", "Still Life"
@@ -64,9 +76,7 @@ fun App() {
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "Targe") {
-        MaterialTheme {
-            SmallTopAppBarExample()
-        }
+        SmallTopAppBarExample()
     }
 }
 
@@ -118,7 +128,7 @@ fun ScreenGallery() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun GalleryControls() {
     Column(Modifier.padding(5.dp)) {
@@ -136,10 +146,12 @@ fun GalleryControls() {
 
         }
 
-        Row {
-
-            FilterChipExample()
-
+        FlowRow(Modifier.verticalScroll(rememberScrollState())
+        ) {
+            for (cap in captions) {
+                FilterChipExample(cap)
+                Spacer(Modifier.padding(5.dp))
+            }
         }
     }
 }
@@ -196,27 +208,28 @@ fun File.toCoilFile(): String {
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterChipExample() {
+fun FilterChipExample(text: String) {
     var selected by remember { mutableStateOf(false) }
 
     FilterChip(
         onClick = { selected = !selected },
+        label = {
+            Text(text)
+        },
         selected = selected,
         leadingIcon = if (selected) {
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
                     contentDescription = "Done icon",
-                    modifier = Modifier.size(ChipDefaults.LeadingIconSize)
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }
         } else {
             null
-        },
+        }
+    )
 
-    ) {
-        Text("Hey")
-    }
 }
