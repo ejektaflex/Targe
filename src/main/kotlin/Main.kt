@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +32,8 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import data.DataManager
+import data.ui.andIf
+import data.ui.withHoverControl
 import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
 
@@ -143,30 +146,11 @@ fun TagImageSelector() {
         items(shownImages.size) {
 
             val coilFile = remember { shownImages[it].toCoilFile() }
+            val isHovering = remember { mutableStateOf(false) }
 
-            val hoverState = remember { MutableInteractionSource() }
-
-            var isHovering by remember { mutableStateOf(false) }
-
-            Box(Modifier.padding(5.dp).fillMaxSize().hoverable(
-                hoverState, enabled = true
-            ).pointerHoverIcon(PointerIcon.Hand).onPointerEvent(
-                PointerEventType.Enter
-            ) {
-                isHovering = true
-            }.onPointerEvent(PointerEventType.Exit) {
-                isHovering = false
-            }.clip(RoundedCornerShape(4.dp)).run {
-                if (isHovering) {
-                    border(10.dp, AppConstants.Theme.Primary)
-                } else {
-                    this
-                }
-            }
-            ) {
-
-
-
+            Box(Modifier.padding(5.dp).fillMaxSize().withHoverControl(isHovering, PointerIcon.Hand).clip(RoundedCornerShape(4.dp)).andIf(isHovering.value) {
+                border(10.dp, AppConstants.Theme.Primary)
+            }) {
                 AsyncImage(
                     modifier = Modifier,
                     model = ImageRequest.Builder(LocalPlatformContext.current)
@@ -175,7 +159,6 @@ fun TagImageSelector() {
                     contentDescription = null,
                     contentScale = ContentScale.Fit
                 )
-
             }
         }
     }
