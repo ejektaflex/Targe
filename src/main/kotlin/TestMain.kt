@@ -1,7 +1,5 @@
-import data.FilterType
 import data.TagStore
 import data.perf.TagStoreFast
-import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
 private val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".lowercase()

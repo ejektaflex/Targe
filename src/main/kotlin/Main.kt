@@ -7,6 +7,7 @@ import androidx.compose.ui.window.application
 import data.DataManager
 import views.GalleryState
 import views.GalleryView
+import views.InspectView
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "Targe") {
@@ -37,8 +38,9 @@ fun MainAppScaffolding() {
             )
         },
     ) { innerPadding ->
-        val state = GalleryState(DataManager.store)
-        GalleryView(state)
+//        val state = GalleryState(DataManager.Store)
+//        GalleryView(state)
+        InspectView()
     }
 }
 

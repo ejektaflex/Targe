@@ -1,11 +1,12 @@
 package data
 
 import androidx.compose.runtime.*
-import java.io.File
 import kotlin.io.path.Path
 
 object DataManager {
-    val store by mutableStateOf(TagStore.from(Path("test_data/odas")))
+    // Holds all of our real tags, the actual source of truth
+    val Store by mutableStateOf(TagStore.from(Path("test_data/odas")))
 
-    var gallerySelection by mutableStateOf(store)
+    var gallerySelection by mutableStateOf(Store)
+
 }

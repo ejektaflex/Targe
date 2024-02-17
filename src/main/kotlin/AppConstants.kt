@@ -6,6 +6,7 @@ object AppConstants {
         val Primary = Color(255, 192, 70)
         val White = Color(0xeeeeee)
         val TextDark = Color(24, 24, 24)
+        val ImageBG = Color(192, 192, 192)
     }
 
     object DataLoading {
