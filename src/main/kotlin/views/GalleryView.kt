@@ -12,6 +12,7 @@ import data.DataManager
 import ui.TFilterChip
 import ui.TImageGrid
 import ui.TSelectedState
+import ui.TagMapState
 
 
 @Composable
@@ -47,17 +48,7 @@ fun GalleryControls(state: GalleryState) {
                 compareBy({ -it.second }, { it.first })
             )) {
 
-                val stat = object : TSelectedState {
-                    override var selected: Boolean
-                        get() = state.filterTags.containsKey(tag)
-                        set(value) {
-                            if (value) {
-                                state.filterTags[tag] = value
-                            } else {
-                                state.filterTags.remove(tag)
-                            }
-                        }
-                }
+                val stat = TagMapState(state.filterTags, tag)
 
                 TFilterChip(stat, "$tag ($count)") { _, new ->
                     if (new) {

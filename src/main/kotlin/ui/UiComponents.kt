@@ -76,6 +76,20 @@ private class TSelectedStateImpl(startState: Boolean) : TSelectedState {
 }
 
 
+
+class TagMapState(private val tagMap: MutableMap<String, Boolean>, val tag: String): TSelectedState {
+    override var selected: Boolean
+        get() = tagMap.containsKey(tag)
+        set(value) {
+            if (value) {
+                tagMap[tag] = value
+            } else {
+                tagMap.remove(tag)
+            }
+        }
+}
+
+
 // A chip used for filtering.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

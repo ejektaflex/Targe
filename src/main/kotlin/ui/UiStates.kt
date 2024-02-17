@@ -8,6 +8,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 
+// Modifier States
+
 fun Modifier.andIf(test: Boolean, func: Modifier.() -> Modifier): Modifier {
     return if (test) {
         func()
