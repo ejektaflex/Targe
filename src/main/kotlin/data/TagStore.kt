@@ -148,7 +148,7 @@ data class TagStore(
                         }
                     }
                 } else {
-                    protoStore.insertFileNoTags(path)
+                    protoStore.getTags(path)
                 }
             }
 

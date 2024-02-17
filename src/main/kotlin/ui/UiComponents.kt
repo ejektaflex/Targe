@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -26,16 +28,17 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import data.TagStore
 import toCoilFile
+import kotlin.math.E
 
 // A simple image grid.
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TImageGrid(tagStore: TagStore) {
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(256.dp),
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(256.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalArrangement = Arrangement.Center
+        //verticalArrangement = Arrangement.Center
     ) {
         val shownImages = tagStore.orderedFileList
 
@@ -64,6 +67,10 @@ fun TImageGrid(tagStore: TagStore) {
     }
 }
 
+enum class Exists
+
+// Selection States
+
 interface TSelectedState {
     var selected: Boolean
 }
@@ -77,12 +84,12 @@ private class TSelectedStateImpl(startState: Boolean) : TSelectedState {
 
 
 
-class TagMapState(private val tagMap: MutableMap<String, Boolean>, val tag: String): TSelectedState {
+class TagMapState(private val tagMap: MutableMap<String, Unit>, val tag: String): TSelectedState {
     override var selected: Boolean
         get() = tagMap.containsKey(tag)
         set(value) {
             if (value) {
-                tagMap[tag] = value
+                tagMap[tag] = Unit
             } else {
                 tagMap.remove(tag)
             }

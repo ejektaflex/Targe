@@ -52,7 +52,7 @@ fun GalleryControls(state: GalleryState) {
 
                 TFilterChip(stat, "$tag ($count)") { _, new ->
                     if (new) {
-                        state.filterTags[tag] = true
+                        state.filterTags[tag] = Unit
                         state.refreshViewStore()
                     } else {
                         state.filterTags.remove(tag)
