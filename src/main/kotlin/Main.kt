@@ -25,69 +25,21 @@ import androidx.compose.ui.window.application
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import data.DataManager
 import java.io.File
 
-val testDataSet = File("test_data/odas")
 
-val allFiles = testDataSet.walk().toList()
-
-val imgFiles = allFiles.filter {
-    it.isFile && it.extension in AppConstants.DataLoading.allowedMedia
-}
-
-val capFiles = allFiles.filter {
-    it.isFile && it.extension == "txt"
-}
-
-val captions = capFiles.map { it.readText().split(",").map { item -> item.trim() } }.flatten().toSet()
 
 val testTagNames = listOf(
     "Person", "Location", "Item", "Landscape", "Portrait", "Still Life"
 )
 
-
-@Composable
-@Preview
-fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
-        }
-    }
-
-//    LazyColumn {
-//        for (i in 0 until 1000000) {
-//            item {
-//                Text("Hello! $i")
-//            }
-//        }
-//    }
-
-
-
-
-
-
-
-}
-
 fun main() = application {
+    DataManager.setup()
     Window(onCloseRequest = ::exitApplication, title = "Targe") {
         SmallTopAppBarExample()
     }
 }
-
-
-
-
-
-
-
-
-
 
 @Composable
 fun SmallTopAppBarExample() {
@@ -128,7 +80,7 @@ fun ScreenGallery() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GalleryControls() {
     Column(Modifier.padding(5.dp)) {
@@ -140,15 +92,12 @@ fun GalleryControls() {
                 Text("Search")
             })
 
-//        SearchBar(text, onQueryChange = { text = it }, onSearch = { println("Searching!") }, active = active, onActiveChange = { active = it }) {
-//            Text("hi")
-//        }
 
         }
 
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
-            for (cap in captions) {
+            for (cap in DataManager.store.allTags) {
                 FilterChipExample(cap)
                 Spacer(Modifier.padding(5.dp))
             }
@@ -182,10 +131,11 @@ fun TagImageSelector() {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.Center
     ) {
+        val shownImages = DataManager.gallerySelection
 
-        items(imgFiles.size) {
+        items(shownImages.size) {
 
-            val coilFile = remember { imgFiles[it].toCoilFile() }
+            val coilFile = remember { shownImages[it].toCoilFile() }
 
             Box(Modifier.padding(5.dp).fillMaxSize()) {
 

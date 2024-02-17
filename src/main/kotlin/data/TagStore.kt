@@ -1,13 +1,13 @@
 package data
 
 
-class TagStore() {
+class TagStore {
     // Map of TagName to List<FilePath>
-    private val tagFiles = mutableMapOf<String, MutableList<String>>()
+    private val tagFiles = mutableMapOf<String, MutableSet<String>>()
     // Map of FileName to List<TagName>
-    private val fileTags = mutableMapOf<String, MutableList<String>>()
+    private val fileTags = mutableMapOf<String, MutableSet<String>>()
     // Map of FileName to Desc
-    private val fileDesc = mutableMapOf<String, String>()
+    private val fileDescs = mutableMapOf<String, MutableSet<String>>()
 
     val allTags: MutableSet<String>
         get() = tagFiles.keys
@@ -15,16 +15,28 @@ class TagStore() {
     val allFiles: MutableSet<String>
         get() = fileTags.keys
 
-    private fun getTags(file: String): MutableList<String> {
-        return fileTags.getOrPut(file) { mutableListOf() }
+    private fun getTags(file: String): MutableSet<String> {
+        return fileTags.getOrPut(file) { mutableSetOf() }
     }
 
-    private fun getFiles(tag: String): MutableList<String> {
-        return tagFiles.getOrPut(tag) { mutableListOf() }
+    private fun getFiles(tag: String): MutableSet<String> {
+        return tagFiles.getOrPut(tag) { mutableSetOf() }
     }
 
-    private fun getDesc(file: String): String? {
-        return fileDesc[file]
+    private fun getDescs(file: String): MutableSet<String> {
+        return fileDescs.getOrPut(file) { mutableSetOf() }
+    }
+
+    fun tagFileWithTag(file: String, tag: String) {
+        getTags(file).add(tag)
+        getFiles(tag).add(file)
+    }
+
+    fun tagFileWithTags(file: String, tags: Set<String>) {
+        getTags(file).addAll(tags)
+        for (tag in tags) {
+            getFiles(tag).add(file)
+        }
     }
 
     // Renames, but won't merge
@@ -60,6 +72,6 @@ class TagStore() {
     }
 
     fun addDescToFile(file: String, desc: String) {
-        fileDesc[file] = desc
+        getDescs(file).add(desc)
     }
 }
