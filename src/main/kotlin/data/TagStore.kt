@@ -12,7 +12,7 @@ data class TagStore(
     private val fileDescs: MutableMap<String, MutableSet<String>> = mutableMapOf()
 ) {
 
-    fun cloneWithTagSubset(subsetTags: Set<String>): TagStore {
+    private fun cloneWithAnySubset(subsetTags: Set<String>): TagStore {
         return copy(
             tagFiles = tagFiles.filter { it.key in subsetTags }.toMutableMap(),
             fileTags = fileTags.filter { it.value.intersect(subsetTags).isNotEmpty() }.toMutableMap(),
@@ -20,16 +20,25 @@ data class TagStore(
         )
     }
 
-    fun cloneWithTagSubset(tag: String): TagStore {
-        return cloneWithTagSubset(setOf(tag))
+    private fun cloneWithEntireSubset(subsetTags: Set<String>): TagStore {
+        return copy(
+            tagFiles = tagFiles.filter { it.key in subsetTags }.toMutableMap(),
+            fileTags = fileTags.filter { it.value.containsAll(subsetTags) }.toMutableMap(),
+            fileDescs = fileDescs.filter { it.value.containsAll(subsetTags) }.toMutableMap()
+        )
     }
 
-    // eventually we might need a cloneWithFileSubset
+    fun cloneWithSubset(subsetTags: Set<String>, filterType: FilterType): TagStore {
+        return when (filterType) {
+            FilterType.OR -> cloneWithAnySubset(subsetTags)
+            FilterType.AND -> cloneWithEntireSubset(subsetTags)
+        }
+    }
 
-    val allTags: MutableSet<String>
+    private val allTags: MutableSet<String>
         get() = tagFiles.keys
 
-    val allFiles: MutableSet<String>
+    private val allFiles: MutableSet<String>
         get() = fileTags.keys
 
     val orderedFileList: List<String>
