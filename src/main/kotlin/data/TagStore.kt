@@ -13,18 +13,21 @@ data class TagStore(
 ) {
 
     private fun cloneWithAnySubset(subsetTags: Set<String>): TagStore {
-        return copy(
-            tagFiles = tagFiles.filter { it.key in subsetTags }.toMutableMap(),
-            fileTags = fileTags.filter { it.value.intersect(subsetTags).isNotEmpty() }.toMutableMap(),
-            fileDescs = fileDescs.filter { it.value.intersect(subsetTags).isNotEmpty() }.toMutableMap()
-        )
+        return TODO("Not done yet, but not needed yet I suppose")
     }
 
     private fun cloneWithEntireSubset(subsetTags: Set<String>): TagStore {
+        // ERROR, is only returning the tags that are in the subset. We should be restricting to tags that are associated with files that have this tag
+
+        // Get files that have these tags, then intersect them all to get only files with all these tags
+        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduce { filesA, filesB -> filesA.intersect(filesB) }
+        // Get all tags associated with these files
+        val matchingTagsForTheseFiles = filesWithAllTags.map { getTags(it) }.flatten()
+
         return copy(
-            tagFiles = tagFiles.filter { it.key in subsetTags }.toMutableMap(),
-            fileTags = fileTags.filter { it.value.containsAll(subsetTags) }.toMutableMap(),
-            fileDescs = fileDescs.filter { it.value.containsAll(subsetTags) }.toMutableMap()
+            tagFiles = tagFiles.filter { it.key in matchingTagsForTheseFiles }.toMutableMap(),
+            fileTags = fileTags.filter { it.key in filesWithAllTags }.toMutableMap(),
+            fileDescs = fileDescs.filter { it.key in filesWithAllTags }.toMutableMap()
         )
     }
 
@@ -35,7 +38,7 @@ data class TagStore(
         }
     }
 
-    private val allTags: MutableSet<String>
+    val allTags: MutableSet<String>
         get() = tagFiles.keys
 
     private val allFiles: MutableSet<String>

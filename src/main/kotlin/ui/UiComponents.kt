@@ -64,23 +64,34 @@ fun TImageGrid(tagStore: TagStore) {
     }
 }
 
+interface TSelectedState {
+    var selected: Boolean
+}
+
+private class TSelectedStateImpl(startState: Boolean) : TSelectedState {
+    var _selected by mutableStateOf(startState)
+    override var selected: Boolean
+        get() = _selected
+        set(value) { _selected = value }
+}
+
+
 // A chip used for filtering.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TFilterChip(chipDisplay: String, onSelectionChanged: (old: Boolean, new: Boolean) -> Unit = { _, _ -> }) {
-    var selected by remember { mutableStateOf(false) }
+fun TFilterChip(selectedState: TSelectedState = remember { TSelectedStateImpl(false) }, chipDisplay: String, onSelectionChanged: (old: Boolean, new: Boolean) -> Unit = { _, _ -> }) {
 
     FilterChip(
         onClick = {
-            val oldSelected = selected
-            selected = !selected
-            onSelectionChanged(oldSelected, selected)
+            val oldSelected = selectedState.selected
+            selectedState.selected = !selectedState.selected
+            onSelectionChanged(oldSelected, selectedState.selected)
         },
         label = {
             Text(chipDisplay)
         },
-        selected = selected,
-        leadingIcon = if (selected) {
+        selected = selectedState.selected,
+        leadingIcon = if (selectedState.selected) {
             {
                 Icon(
                     imageVector = Icons.Filled.Done,

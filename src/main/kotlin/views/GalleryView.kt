@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import data.DataManager
 import ui.TFilterChip
 import ui.TImageGrid
+import ui.TSelectedState
 
 
 @Composable
@@ -41,10 +42,26 @@ fun GalleryControls(state: GalleryState) {
 
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
-            for ((tag, count) in DataManager.store.genTagFrequencies()) {
-                TFilterChip("$tag ($count)") { _, new ->
+            for ((tag, count) in state.viewStore.genTagFrequencies(
+                //compareBy({ !(state.filterTags[it.first] ?: false) }, { -it.second }, { it.first })
+                compareBy({ -it.second }, { it.first })
+            )) {
+
+                val stat = object : TSelectedState {
+                    override var selected: Boolean
+                        get() = state.filterTags.containsKey(tag)
+                        set(value) {
+                            if (value) {
+                                state.filterTags[tag] = value
+                            } else {
+                                state.filterTags.remove(tag)
+                            }
+                        }
+                }
+
+                TFilterChip(stat, "$tag ($count)") { _, new ->
                     if (new) {
-                        state.filterTags.add(tag)
+                        state.filterTags[tag] = true
                         state.refreshViewStore()
                     } else {
                         state.filterTags.remove(tag)
