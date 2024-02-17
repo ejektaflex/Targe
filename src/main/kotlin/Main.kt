@@ -1,4 +1,7 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.border
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,8 +19,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -26,6 +31,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import data.DataManager
+import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
 
 
@@ -123,6 +129,7 @@ fun GalleryControls() {
 //    }
 //}
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TagImageSelector() {
 
@@ -137,15 +144,36 @@ fun TagImageSelector() {
 
             val coilFile = remember { shownImages[it].toCoilFile() }
 
-            Box(Modifier.padding(5.dp).fillMaxSize()) {
+            val hoverState = remember { MutableInteractionSource() }
+
+            var isHovering by remember { mutableStateOf(false) }
+
+            Box(Modifier.padding(5.dp).fillMaxSize().hoverable(
+                hoverState, enabled = true
+            ).pointerHoverIcon(PointerIcon.Hand).onPointerEvent(
+                PointerEventType.Enter
+            ) {
+                isHovering = true
+            }.onPointerEvent(PointerEventType.Exit) {
+                isHovering = false
+            }.clip(RoundedCornerShape(4.dp)).run {
+                if (isHovering) {
+                    border(10.dp, AppConstants.Theme.Primary)
+                } else {
+                    this
+                }
+            }
+            ) {
+
+
 
                 AsyncImage(
-                    modifier = Modifier.clip(RoundedCornerShape(5.dp)),
+                    modifier = Modifier,
                     model = ImageRequest.Builder(LocalPlatformContext.current)
                         .data(coilFile)
                         .build(),
                     contentDescription = null,
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Fit
                 )
 
             }
