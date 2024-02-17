@@ -1,29 +1,20 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.border
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material3.FilterChip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.SearchBar
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.*
+import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -34,17 +25,9 @@ import coil3.request.ImageRequest
 import data.DataManager
 import data.ui.andIf
 import data.ui.withHoverControl
-import kotlinx.coroutines.flow.firstOrNull
 import java.io.File
 
-
-
-val testTagNames = listOf(
-    "Person", "Location", "Item", "Landscape", "Portrait", "Still Life"
-)
-
 fun main() = application {
-    DataManager.setup()
     Window(onCloseRequest = ::exitApplication, title = "Targe") {
         SmallTopAppBarExample()
     }
@@ -107,7 +90,7 @@ fun GalleryControls() {
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
             for ((tag, count) in DataManager.store.genTagFrequencies()) {
-                FilterChipExample("$tag ($count)")
+                FilterChipExample("$tag ($count)", tag)
                 Spacer(Modifier.padding(5.dp))
             }
         }
@@ -132,7 +115,7 @@ fun GalleryControls() {
 //    }
 //}
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun TagImageSelector() {
 
@@ -141,15 +124,19 @@ fun TagImageSelector() {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.Center
     ) {
-        val shownImages = DataManager.gallerySelection
+        val shownImages = DataManager.gallerySelection.orderedFileList
+
+        println("ORDERED: $shownImages")
 
         items(shownImages.size) {
 
-            val coilFile = remember { shownImages[it].toCoilFile() }
+            val coilFile = shownImages[it].toCoilFile()
             val isHovering = remember { mutableStateOf(false) }
 
             Box(Modifier.padding(5.dp).fillMaxSize().withHoverControl(isHovering, PointerIcon.Hand).clip(RoundedCornerShape(5.dp)).andIf(isHovering.value) {
                 border(8.dp, AppConstants.Theme.Primary)
+            }.onClick {
+                println("Clicked! Was img: ${shownImages[it].toCoilFile()} //// $coilFile")
             }) {
                 AsyncImage(
                     modifier = Modifier,
@@ -168,16 +155,29 @@ fun File.toCoilFile(): String {
     return "file://" + absolutePath.replace("\\", "/")
 }
 
+fun String.toCoilFile(): String {
+    return "file://" + replace("\\", "/")
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterChipExample(text: String) {
+fun FilterChipExample(chipDisplay: String, tagContent: String) {
     var selected by remember { mutableStateOf(false) }
 
     FilterChip(
-        onClick = { selected = !selected },
+        onClick = {
+            selected = !selected
+            if (selected) {
+                println("BEFORE: ${DataManager.gallerySelection.allTags.size}")
+                DataManager.gallerySelection = DataManager.gallerySelection.cloneWithTagSubset(tagContent)
+                println("AFTER: ${DataManager.gallerySelection.allTags.size}")
+            } else {
+                DataManager.gallerySelection = DataManager.store
+            }
+        },
         label = {
-            Text(text)
+            Text(chipDisplay)
         },
         selected = selected,
         leadingIcon = if (selected) {

@@ -1,5 +1,7 @@
 package data
 
+import java.nio.file.Path
+
 
 data class TagStore(
     // Map of TagName to List<FilePath>
@@ -18,6 +20,10 @@ data class TagStore(
         )
     }
 
+    fun cloneWithTagSubset(tag: String): TagStore {
+        return cloneWithTagSubset(setOf(tag))
+    }
+
     // eventually we might need a cloneWithFileSubset
 
     val allTags: MutableSet<String>
@@ -25,9 +31,14 @@ data class TagStore(
 
     val allFiles: MutableSet<String>
         get() = fileTags.keys
-    
-    fun genTagFrequencies(): List<Pair<String, Int>> {
-        return tagFiles.map { it.key to it.value.size }.sortedWith(compareBy({ -it.second }, { it.first }))
+
+    val orderedFileList: List<String>
+        get() = allFiles.sorted()
+
+    fun genTagFrequencies(
+        comparator: Comparator<Pair<String, Int>> = compareBy({ -it.second }, { it.first })
+    ): List<Pair<String, Int>> {
+        return tagFiles.map { it.key to it.value.size }.sortedWith(comparator)
     }
 
     private fun getTags(file: String): MutableSet<String> {
@@ -88,5 +99,42 @@ data class TagStore(
 
     fun addDescToFile(file: String, desc: String) {
         getDescs(file).add(desc)
+    }
+
+    companion object {
+        fun from(folder: Path): TagStore {
+            val protoStore = TagStore()
+
+            val testDataSet = folder.toFile()
+            val allFiles = testDataSet.walk().toList()
+
+            val imgFiles = allFiles.filter {
+                it.isFile && it.extension in AppConstants.DataLoading.allowedMedia
+            }.toSet()
+
+
+            // TODO if there is no caption file, the file will not be added to the db
+            val startingCaps = imgFiles.associate {
+                val matchingCap = it.resolveSibling("${it.nameWithoutExtension}.txt").takeIf { f -> f.exists() }
+                it.absolutePath to matchingCap?.readText()?.split(",")?.map { item ->
+                    item.trim()
+                }?.toSet()
+            }
+
+            for ((path, caps) in startingCaps) {
+                if (caps != null) {
+                    for (cap in caps) {
+                        // Anything longer than three words (e.g. "dog with job") is instead a description
+                        if (cap.split(" ").size > 3) {
+                            protoStore.addDescToFile(path, cap)
+                        } else {
+                            protoStore.tagFileWithTag(path, cap)
+                        }
+                    }
+                }
+            }
+
+            return protoStore
+        }
     }
 }
