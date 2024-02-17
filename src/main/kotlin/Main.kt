@@ -106,8 +106,8 @@ fun GalleryControls() {
 
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
-            for (cap in DataManager.store.allTags) {
-                FilterChipExample(cap)
+            for ((tag, count) in DataManager.store.genTagFrequencies()) {
+                FilterChipExample("$tag ($count)")
                 Spacer(Modifier.padding(5.dp))
             }
         }
@@ -148,8 +148,8 @@ fun TagImageSelector() {
             val coilFile = remember { shownImages[it].toCoilFile() }
             val isHovering = remember { mutableStateOf(false) }
 
-            Box(Modifier.padding(5.dp).fillMaxSize().withHoverControl(isHovering, PointerIcon.Hand).clip(RoundedCornerShape(4.dp)).andIf(isHovering.value) {
-                border(10.dp, AppConstants.Theme.Primary)
+            Box(Modifier.padding(5.dp).fillMaxSize().withHoverControl(isHovering, PointerIcon.Hand).clip(RoundedCornerShape(5.dp)).andIf(isHovering.value) {
+                border(8.dp, AppConstants.Theme.Primary)
             }) {
                 AsyncImage(
                     modifier = Modifier,

@@ -1,19 +1,34 @@
 package data
 
 
-class TagStore {
+data class TagStore(
     // Map of TagName to List<FilePath>
-    private val tagFiles = mutableMapOf<String, MutableSet<String>>()
+    private val tagFiles: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     // Map of FileName to List<TagName>
-    private val fileTags = mutableMapOf<String, MutableSet<String>>()
+    private val fileTags: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     // Map of FileName to Desc
-    private val fileDescs = mutableMapOf<String, MutableSet<String>>()
+    private val fileDescs: MutableMap<String, MutableSet<String>> = mutableMapOf()
+) {
+
+    fun cloneWithTagSubset(subsetTags: Set<String>): TagStore {
+        return copy(
+            tagFiles = tagFiles.filter { it.key in subsetTags }.toMutableMap(),
+            fileTags = fileTags.filter { it.value.intersect(subsetTags).isNotEmpty() }.toMutableMap(),
+            fileDescs = fileDescs.filter { it.value.intersect(subsetTags).isNotEmpty() }.toMutableMap()
+        )
+    }
+
+    // eventually we might need a cloneWithFileSubset
 
     val allTags: MutableSet<String>
         get() = tagFiles.keys
 
     val allFiles: MutableSet<String>
         get() = fileTags.keys
+    
+    fun genTagFrequencies(): List<Pair<String, Int>> {
+        return tagFiles.map { it.key to it.value.size }.sortedWith(compareBy({ -it.second }, { it.first }))
+    }
 
     private fun getTags(file: String): MutableSet<String> {
         return fileTags.getOrPut(file) { mutableSetOf() }
