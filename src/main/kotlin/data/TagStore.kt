@@ -65,6 +65,10 @@ data class TagStore(
         }
     }
 
+    fun insertFileNoTags(file: String) {
+        getTags(file)
+    }
+
     // Renames, but won't merge
     private fun renameTag(oldName: String, newName: String) {
         if (newName in allTags) {
@@ -131,6 +135,8 @@ data class TagStore(
                             protoStore.tagFileWithTag(path, cap)
                         }
                     }
+                } else {
+                    protoStore.insertFileNoTags(path)
                 }
             }
 

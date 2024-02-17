@@ -1,4 +1,4 @@
-package data.ui
+package ui
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.ExperimentalComposeUiApi
