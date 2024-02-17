@@ -12,11 +12,15 @@ data class TagStore(
     private val fileDescs: MutableMap<String, MutableSet<String>> = mutableMapOf()
 ) {
 
-    private fun cloneWithAnySubset(subsetTags: Set<String>): TagStore {
-        return TODO("Not done yet, but not needed yet I suppose")
+    // Map of File, then each Tag and a boolean (True for Added, False for Removed)
+    // This will help us keep track of what to flush to disk later on
+    private val changedFiles = mutableMapOf<String, MutableMap<String, Boolean>>()
+
+    fun getChangedFiles(): Set<String> {
+        return changedFiles.filter { it.value.keys.isNotEmpty() }.keys
     }
 
-    private fun cloneWithEntireSubset(subsetTags: Set<String>): TagStore {
+    fun cloneWithEntireSubset(subsetTags: Set<String>): TagStore {
         // ERROR, is only returning the tags that are in the subset. We should be restricting to tags that are associated with files that have this tag
 
         // Get files that have these tags, then intersect them all to get only files with all these tags
@@ -38,13 +42,6 @@ data class TagStore(
         return filesWithAllTags.map { getTags(it) }.flatten().toSet()
     }
 
-    fun cloneWithSubset(subsetTags: Set<String>, filterType: FilterType): TagStore {
-        return when (filterType) {
-            FilterType.OR -> cloneWithAnySubset(subsetTags)
-            FilterType.AND -> cloneWithEntireSubset(subsetTags)
-        }
-    }
-
     val allTags: MutableSet<String>
         get() = tagFiles.keys
 
@@ -60,21 +57,34 @@ data class TagStore(
         return tagFiles.map { it.key to it.value.size }.sortedWith(comparator)
     }
 
-    private fun getTags(file: String): MutableSet<String> {
+    fun getTags(file: String): MutableSet<String> {
         return fileTags.getOrPut(file) { mutableSetOf() }
     }
 
-    private fun getFiles(tag: String): MutableSet<String> {
+    fun getFiles(tag: String): MutableSet<String> {
         return tagFiles.getOrPut(tag) { mutableSetOf() }
+    }
+
+    fun getChanges(file: String): MutableMap<String, Boolean> {
+        return changedFiles.getOrPut(file) { mutableMapOf() }
     }
 
     private fun getDescs(file: String): MutableSet<String> {
         return fileDescs.getOrPut(file) { mutableSetOf() }
     }
 
-    fun tagFileWithTag(file: String, tag: String) {
+    fun tagFileWithTag(file: String, tag: String, markDirty: Boolean = true) {
         getTags(file).add(tag)
         getFiles(tag).add(file)
+        if (markDirty) {
+            getChanges(file)[tag] = true
+        }
+    }
+
+    fun untagFileWithTag(file: String, tag: String) {
+        getTags(file).remove(tag)
+        getFiles(tag).remove(file)
+        getChanges(file)[tag] = false
     }
 
     fun tagFileWithTags(file: String, tags: Set<String>) {
@@ -151,7 +161,7 @@ data class TagStore(
                         if (cap.split(" ").size > 3) {
                             protoStore.addDescToFile(path, cap)
                         } else {
-                            protoStore.tagFileWithTag(path, cap)
+                            protoStore.tagFileWithTag(path, cap, markDirty = false)
                         }
                     }
                 } else {

@@ -1,6 +1,7 @@
 import data.FilterType
 import data.TagStore
 import data.perf.TagStoreFast
+import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
 private val source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".lowercase()
@@ -48,8 +49,8 @@ fun main() {
 
     val filterNormTime = measureTimeMillis {
         //val newTs = ts.cloneWithSubset(setOf("abc"), FilterType.AND)
-        val newTs = ts.getEasyCloneTags(setOf("abc"))
-        println("Num Filtered Tags: ${newTs.size}")
+        val newTs = ts.cloneWithEntireSubset(setOf("abc"))
+        println("Num Filtered Tags: ${newTs.allTags.size}")
     }
 
     println("Filtering (Norm) took: ${filterNormTime}ms")
@@ -62,7 +63,19 @@ fun main() {
     println("Filtering (Perf) took: ${filterFastTime}ms")
 
 
-
+//    // QUICK PERF!
+//
+//    val accessNormTime = measureNanoTime {
+//        val getTag = ts.getFiles("abc")
+//    }
+//
+//    println("Accessing (Norm) took: ${accessNormTime}ns")
+//
+//    val accessPerfTime = measureNanoTime {
+//        val getTag = tsf.linksWithTag("abc")
+//    }
+//
+//    println("Accessing (Perf) took: ${accessPerfTime}ns")
 
 
 

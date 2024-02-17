@@ -14,7 +14,7 @@ class GalleryState(val truthStore: TagStore) {
 
     fun refreshViewStore() {
         viewStore = if (filterTags.keys.isNotEmpty()) {
-            truthStore.cloneWithSubset(filterTags.keys, FilterType.AND)
+            truthStore.cloneWithEntireSubset(filterTags.keys)
         } else {
             truthStore
         }
