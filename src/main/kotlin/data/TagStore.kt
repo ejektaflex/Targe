@@ -20,15 +20,22 @@ data class TagStore(
         // ERROR, is only returning the tags that are in the subset. We should be restricting to tags that are associated with files that have this tag
 
         // Get files that have these tags, then intersect them all to get only files with all these tags
-        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduce { filesA, filesB -> filesA.intersect(filesB) }
+        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
         // Get all tags associated with these files
-        val matchingTagsForTheseFiles = filesWithAllTags.map { getTags(it) }.flatten()
+        val matchingTagsForTheseFiles = filesWithAllTags.map { getTags(it) }.flatten().toSet()
 
         return copy(
             tagFiles = tagFiles.filter { it.key in matchingTagsForTheseFiles }.toMutableMap(),
             fileTags = fileTags.filter { it.key in filesWithAllTags }.toMutableMap(),
             fileDescs = fileDescs.filter { it.key in filesWithAllTags }.toMutableMap()
         )
+    }
+
+    fun getEasyCloneTags(subsetTags: Set<String>): Set<String> {
+        // Get files that have these tags, then intersect them all to get only files with all these tags
+        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
+        // Get all tags associated with these files
+        return filesWithAllTags.map { getTags(it) }.flatten().toSet()
     }
 
     fun cloneWithSubset(subsetTags: Set<String>, filterType: FilterType): TagStore {
