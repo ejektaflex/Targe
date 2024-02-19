@@ -38,9 +38,9 @@ fun MainAppScaffolding() {
             )
         },
     ) { innerPadding ->
-//        val state = GalleryState(DataManager.Store)
-//        GalleryView(state)
-        InspectView()
+        val state = GalleryState(DataManager.Store)
+        GalleryView(state)
+//        InspectView()
     }
 }
 

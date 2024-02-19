@@ -1,14 +1,12 @@
 package ui
 
 import AppConstants
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -26,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import data.DataManager
 import data.TagStore
 import toCoilFile
+import views.GalleryState
 import kotlin.math.E
 
 // A simple image grid.
@@ -54,14 +54,30 @@ fun TImageGrid(tagStore: TagStore) {
             }.onClick {
                 println("Clicked! Was img: ${shownImages[it].toCoilFile()} //// $coilFile")
             }) {
-                AsyncImage(
-                    modifier = Modifier,
-                    model = ImageRequest.Builder(LocalPlatformContext.current)
-                        .data(coilFile)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit
-                )
+                ContextMenuArea(items = {
+                    val listItems = mutableListOf(
+                        ContextMenuItem("Edit Tags On Photo") {/*do something here*/},
+                    )
+
+                    if (DataManager.gallerySelection.orderedFileList.isNotEmpty()) {
+                        listItems.add(ContextMenuItem("Remove selected labels from photo") {/*do something else*/})
+                    }
+
+                    listItems
+                }) {
+                    AsyncImage(
+                        modifier = Modifier,
+                        model = ImageRequest.Builder(LocalPlatformContext.current)
+                            .data(coilFile)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        onError = { err ->
+                            println("Couldn't do it: $coilFile")
+                            err.result.throwable.printStackTrace()
+                        }
+                    )
+                }
             }
         }
     }

@@ -24,9 +24,9 @@ data class TagStore(
         // ERROR, is only returning the tags that are in the subset. We should be restricting to tags that are associated with files that have this tag
 
         // Get files that have these tags, then intersect them all to get only files with all these tags
-        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
+        val filesWithAllTags = filesMatchingTagSet(subsetTags)
         // Get all tags associated with these files
-        val matchingTagsForTheseFiles = filesWithAllTags.map { getTags(it) }.flatten().toSet()
+        val matchingTagsForTheseFiles = filesToTags(filesWithAllTags)
 
         return copy(
             tagFiles = tagFiles.filter { it.key in matchingTagsForTheseFiles }.toMutableMap(),
@@ -35,11 +35,22 @@ data class TagStore(
         )
     }
 
-    fun getEasyCloneTags(subsetTags: Set<String>): Set<String> {
+    fun filesMatchingTagSet(subsetTags: Set<String>): Set<String> {
+        if (subsetTags.isEmpty()) {
+            return tagFiles.keys
+        }
+        return subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
+    }
+
+    fun filesToTags(subsetFiles: Set<String>): Set<String> {
+        return subsetFiles.map { getTags(it) }.flatten().toSet()
+    }
+
+    fun genFilteredTagSet(subsetTags: Set<String>): Set<String> {
         // Get files that have these tags, then intersect them all to get only files with all these tags
-        val filesWithAllTags = subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
+        val filesWithAllTags = filesMatchingTagSet(subsetTags)
         // Get all tags associated with these files
-        return filesWithAllTags.map { getTags(it) }.flatten().toSet()
+        return filesToTags(filesWithAllTags)
     }
 
     val allTags: MutableSet<String>
