@@ -9,4 +9,6 @@ object DataManager {
 
     var gallerySelection by mutableStateOf(Store)
 
+    var isCtrl by mutableStateOf(false)
+
 }

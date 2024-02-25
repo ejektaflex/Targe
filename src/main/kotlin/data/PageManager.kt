@@ -21,6 +21,10 @@ object PageManager {
         currentState?.drawSelf()
     }
 
+    fun goBack() {
+        stateStack.removeLastOrNull()
+    }
+
     fun goToGallery() {
         val newState = GalleryState(DataManager.Store)
         stateStack.add(newState)

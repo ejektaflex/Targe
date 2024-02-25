@@ -3,8 +3,6 @@ package ui
 import AppConstants
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -29,13 +27,18 @@ import data.DataManager
 import data.PageManager
 import data.TagStore
 import toCoilFile
-import views.GalleryState
-import kotlin.math.E
+import kotlin.math.abs
 
 // A simple image grid.
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TImageGrid(tagStore: TagStore, lsgs: LazyStaggeredGridState) {
+fun TImageGrid(
+    tagStore: TagStore,
+    lsgs: LazyStaggeredGridState,
+    selectedIndices: Set<Int>,
+    onSingleClick: (img: String, ind: Int) -> Unit = { _, _ -> },
+    onDoubleClick: (img: String, ind: Int) -> Unit = { _, _ -> }
+) {
 
     val scrollState = remember { lsgs }
 
@@ -54,25 +57,39 @@ fun TImageGrid(tagStore: TagStore, lsgs: LazyStaggeredGridState) {
             Box(
                 Modifier.padding(5.dp).fillMaxSize().withHoverControl(isHovering, PointerIcon.Hand).clip(
                     RoundedCornerShape(5.dp)
-                ).andIf(isHovering.value) {
-                border(8.dp, AppConstants.Theme.Primary)
-            }.onClick {
-                println("Clicked! Was img: ${shownImages[it].toCoilFile()} //// $coilFile")
-            }) {
+                ).andIf(isHovering.value || it in selectedIndices) {
+                    if (it in selectedIndices) {
+                        border(8.dp, AppConstants.Theme.TextDark)
+                    } else {
+                        border(8.dp, AppConstants.Theme.Primary)
+                    }
+                }.onClick {
+                    println("Clicked! Was img: ${shownImages[it].toCoilFile()} //// $coilFile")
+                }
+            ) {
                 ContextMenuArea(items = {
                     val listItems = mutableListOf(
                         ContextMenuItem("Edit Tags On Photo") {/*do something here*/},
                     )
 
-                    if (DataManager.gallerySelection.orderedFileList.isNotEmpty()) {
+                    if (tagStore.orderedFileList.isNotEmpty()) {
                         listItems.add(ContextMenuItem("Remove selected labels from photo") {/*do something else*/})
                     }
 
                     listItems
                 }) {
+
+                    val lastClicked = remember { mutableStateOf(System.currentTimeMillis()) }
+
                     AsyncImage(
                         modifier = Modifier.onClick {
-                            PageManager.goToInspector(coilFile)
+                            val currTime = System.currentTimeMillis()
+                            if (abs(currTime - lastClicked.value) < 330L) {
+                                onDoubleClick(coilFile, it)
+                            } else {
+                                onSingleClick(coilFile, it)
+                            }
+                            lastClicked.value = currTime
                         },
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(coilFile)

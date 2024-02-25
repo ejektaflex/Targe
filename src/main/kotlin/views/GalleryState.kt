@@ -12,7 +12,16 @@ class GalleryState(private val truthStore: TagStore) : ViewState<GalleryState> {
     var viewStore by mutableStateOf(truthStore)
     val filterTags = mutableStateMapOf<String, Unit>()
     val lsgs by mutableStateOf(LazyStaggeredGridState())
+    val selectedItems = mutableStateMapOf<Int, Unit>()
 
+    fun selectItem(index: Int) {
+        selectedItems.clear()
+        addSelectedItem(index)
+    }
+
+    fun addSelectedItem(index: Int) {
+        selectedItems[index] = Unit
+    }
 
     fun refreshViewStore() {
         viewStore = if (filterTags.keys.isNotEmpty()) {

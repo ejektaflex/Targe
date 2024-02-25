@@ -1,5 +1,6 @@
 package views
 
+import addSetItem
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -7,8 +8,12 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.unit.dp
 import data.DataManager
+import data.PageManager
 import ui.TFilterChip
 import ui.TImageGrid
 import ui.TSelectedState
@@ -23,7 +28,16 @@ fun GalleryView(state: GalleryState) {
             GalleryControls(galleryState)
         }
         Column(Modifier.weight(2f)) {
-            TImageGrid(galleryState.viewStore, state.lsgs)
+            TImageGrid(galleryState.viewStore, galleryState.lsgs, galleryState.selectedItems.keys, onSingleClick = { img, ind ->
+                galleryState.selectedItems.addSetItem(ind)
+                if (DataManager.isCtrl) {
+                    galleryState.addSelectedItem(ind)
+                } else {
+                    galleryState.selectItem(ind)
+                }
+            }, onDoubleClick = { img, ind ->
+                PageManager.goToInspector(img)
+            })
         }
     }
 }

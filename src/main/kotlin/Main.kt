@@ -4,20 +4,22 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import data.AppPage
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.input.key.isCtrlPressed
 import data.DataManager
 import data.PageManager
-import views.GalleryState
-import views.GalleryView
-import views.InspectState
-import views.InspectView
 
 fun main() = application {
 
     PageManager.goToGallery()
 
-    Window(onCloseRequest = ::exitApplication, title = "Targe") {
-        MainAppScaffolding()
+    Window(onCloseRequest = ::exitApplication, title = "Targe", onKeyEvent = {
+        DataManager.isCtrl = it.isCtrlPressed
+        false
+    }) {
+         MaterialTheme {
+            MainAppScaffolding()
+        }
     }
 }
 
