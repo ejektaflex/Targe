@@ -8,15 +8,11 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.unit.dp
 import data.DataManager
 import data.PageManager
 import ui.TFilterChip
 import ui.TImageGrid
-import ui.TSelectedState
 import ui.TagMapState
 
 
@@ -24,7 +20,7 @@ import ui.TagMapState
 fun GalleryView(state: GalleryState) {
     val galleryState by remember { mutableStateOf(state) }
     Row(Modifier.fillMaxSize()) {
-        Column(Modifier.requiredWidth(320.dp)) {
+        Column(Modifier.requiredWidth(360.dp)) {
             GalleryControls(galleryState)
         }
         Column(Modifier.weight(2f)) {
@@ -57,22 +53,25 @@ fun GalleryControls(state: GalleryState) {
 
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
-            val freqs = state.viewStore.genTagFrequencies()
+            val freqs = state.truthStore.genTagsForDisplay(subsetTags = state.filterWith, minusTags = state.filterWithout)
+
+            //println(state.filterWithout)
+            //println(freqs.toMap().keys.intersect(state.filterWithout))
+
             for ((tag, count) in freqs) {
 
                 val stat = TagMapState(state.filterTags, tag)
-                val chipFreq = state.viewStore.genFilteredTagSet(state.filterTags.keys + tag).size
+                //val chipFreq = state.viewStore.genFilteredTagSet(state.filterWith + tag, state.filterWithout).size
 
                 val sizeToShow = count
 
                 TFilterChip(stat, "$tag ($sizeToShow)") { _, new ->
-                    if (new) {
-                        state.filterTags[tag] = Unit
-                        state.refreshViewStore()
+                    if (new != null) {
+                        state.filterTags[tag] = new
                     } else {
                         state.filterTags.remove(tag)
-                        state.refreshViewStore()
                     }
+                    state.refreshViewStore()
                 }
                 Spacer(Modifier.padding(5.dp))
             }

@@ -10,10 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.SelectableChipColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +26,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import data.DataManager
-import data.PageManager
+import data.FilterType
 import data.TagStore
 import toCoilFile
 import kotlin.math.abs
@@ -107,31 +109,29 @@ fun TImageGrid(
     }
 }
 
-enum class Exists
-
 // Selection States
 
 interface TSelectedState {
-    var selected: Boolean
+    var filterType: FilterType?
 }
 
-private class TSelectedStateImpl(startState: Boolean) : TSelectedState {
-    var _selected by mutableStateOf(startState)
-    override var selected: Boolean
+private class TSelectedStateImpl(startType: FilterType?) : TSelectedState {
+    var _selected by mutableStateOf(startType)
+    override var filterType: FilterType?
         get() = _selected
         set(value) { _selected = value }
 }
 
 
 
-class TagMapState(private val tagMap: MutableMap<String, Unit>, val tag: String): TSelectedState {
-    override var selected: Boolean
-        get() = tagMap.containsKey(tag)
+class TagMapState(private val tagMap: MutableMap<String, FilterType>, val tag: String): TSelectedState {
+    override var filterType: FilterType?
+        get() = tagMap[tag]
         set(value) {
-            if (value) {
-                tagMap[tag] = Unit
-            } else {
+            if (value == null) {
                 tagMap.remove(tag)
+            } else {
+                tagMap[tag] = value
             }
         }
 }
@@ -140,23 +140,27 @@ class TagMapState(private val tagMap: MutableMap<String, Unit>, val tag: String)
 // A chip used for filtering.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TFilterChip(selectedState: TSelectedState = remember { TSelectedStateImpl(false) }, chipDisplay: String, onSelectionChanged: (old: Boolean, new: Boolean) -> Unit = { _, _ -> }) {
+fun TFilterChip(selectedState: TSelectedState = remember { TSelectedStateImpl(null) }, chipDisplay: String, onSelectionChanged: (old: FilterType?, new: FilterType?) -> Unit = { _, _ -> }) {
 
     FilterChip(
         onClick = {
-            val oldSelected = selectedState.selected
-            selectedState.selected = !selectedState.selected
-            onSelectionChanged(oldSelected, selectedState.selected)
+            val oldSelected = selectedState.filterType
+            selectedState.filterType = when {
+                selectedState.filterType != null -> null
+                DataManager.isCtrl -> FilterType.WITHOUT
+                else -> FilterType.WITH
+            }
+            onSelectionChanged(oldSelected, selectedState.filterType)
         },
         label = {
-            Text(chipDisplay)
+            Text(chipDisplay, color = if (selectedState.filterType == FilterType.WITHOUT) AppConstants.Theme.TextRed else AppConstants.Theme.Primary)
         },
-        selected = selectedState.selected,
-        leadingIcon = if (selectedState.selected) {
+        selected = selectedState.filterType != null,
+        leadingIcon = if (selectedState.filterType != null) {
             {
                 Icon(
-                    imageVector = Icons.Filled.Done,
-                    contentDescription = "Done icon",
+                    imageVector = if (selectedState.filterType == FilterType.WITH) Icons.Filled.Done else Icons.Filled.Clear,
+                    contentDescription = "Filter Icon",
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }

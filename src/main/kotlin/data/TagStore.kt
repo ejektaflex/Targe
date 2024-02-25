@@ -22,13 +22,14 @@ data class TagStore(
         return changedFiles.filter { it.value.keys.isNotEmpty() }.keys
     }
 
-    fun cloneWithEntireSubset(subsetTags: Set<String>): TagStore {
+    fun cloneWithEntireSubset(subsetTags: Set<String>, minusTags: Set<String> = emptySet()): TagStore {
         // ERROR, is only returning the tags that are in the subset. We should be restricting to tags that are associated with files that have this tag
 
         // Get files that have these tags, then intersect them all to get only files with all these tags
-        val filesWithAllTags = filesMatchingTagSet(subsetTags)
+        val filesWithAllTags = filesMatchingTagSet(subsetTags, minusTags)
+
         // Get all tags associated with these files
-        val matchingTagsForTheseFiles = filesToTags(filesWithAllTags)
+        val matchingTagsForTheseFiles = filesToTags(filesWithAllTags, minusTags)
 
         return copy(
             tagFiles = tagFiles.filter { it.key in matchingTagsForTheseFiles }.toMutableMap(),
@@ -37,22 +38,32 @@ data class TagStore(
         )
     }
 
-    fun filesMatchingTagSet(subsetTags: Set<String>): Set<String> {
-        if (subsetTags.isEmpty()) {
+    fun filesMatchingTagSet(subsetTags: Set<String>, minusTags: Set<String> = emptySet()): Set<String> {
+        if (subsetTags.isEmpty() && minusTags.isEmpty()) {
             return fileTags.keys
         }
+        val filesMatchingSubset = if (subsetTags.isEmpty()) fileTags.keys else filesMatchingAllTags(subsetTags)
+        val filesMatchingMinus = if (minusTags.isEmpty()) emptySet() else filesMatchingAllTags(minusTags)
+        val matchedFiles = filesMatchingSubset - filesMatchingMinus
+        //println("MATCHES: ${matchedFiles.size}")
+        return matchedFiles.filter {
+            minusTags.isEmpty() || getTags(it).intersect(minusTags).isEmpty()
+        }.toSet()
+    }
+
+    fun filesMatchingAllTags(subsetTags: Set<String>): Set<String> {
         return subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
     }
 
-    fun filesToTags(subsetFiles: Set<String>): Set<String> {
-        return subsetFiles.map { getTags(it) }.flatten().toSet()
+    fun filesToTags(subsetFiles: Set<String>, minusTags: Set<String> = emptySet()): Set<String> {
+        return subsetFiles.map { getTags(it) }.filter { minusTags.isEmpty() || it.intersect(minusTags).isEmpty() }.flatten().toSet()
     }
 
-    fun genFilteredTagSet(subsetTags: Set<String>): Set<String> {
+    fun genFilteredTagSet(subsetTags: Set<String>, minusTags: Set<String> = emptySet()): Set<String> {
         // Get files that have these tags, then intersect them all to get only files with all these tags
-        val filesWithAllTags = filesMatchingTagSet(subsetTags)
+        val filesWithAllTags = filesMatchingTagSet(subsetTags, minusTags)
         // Get all tags associated with these files
-        return filesToTags(filesWithAllTags)
+        return filesToTags(filesWithAllTags, minusTags)
     }
 
     val allTags: MutableSet<String>
@@ -64,11 +75,12 @@ data class TagStore(
     val orderedFileList: List<String>
         get() = allFiles.sorted()
 
-    fun genTagFrequencies(
+    fun genTagsForDisplay(
         subsetTags: Set<String> = emptySet(),
+        minusTags: Set<String> = emptySet(),
         comparator: Comparator<Pair<String, Int>> = compareBy({ -it.second }, { it.first })
     ): List<Pair<String, Int>> {
-        val tf = genFilteredTagSet(subsetTags)
+        val tf = genFilteredTagSet(subsetTags, minusTags) + minusTags + subsetTags
         return tagFiles.filter { it.key in tf }.map { it.key to it.value.size }.sortedWith(comparator)
     }
 
