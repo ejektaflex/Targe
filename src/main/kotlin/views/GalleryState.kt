@@ -4,9 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import data.AppPage
 import data.TagStore
 
-class GalleryState(private val truthStore: TagStore) {
+class GalleryState(private val truthStore: TagStore) : ViewState<GalleryState> {
+
+    override val page = AppPage.GALLERY
+
     var viewStore by mutableStateOf(truthStore)
     val filterTags = mutableStateMapOf<String, Unit>()
 

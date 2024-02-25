@@ -25,6 +25,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import data.DataManager
+import data.PageManager
 import data.TagStore
 import toCoilFile
 import views.GalleryState
@@ -66,7 +67,9 @@ fun TImageGrid(tagStore: TagStore) {
                     listItems
                 }) {
                     AsyncImage(
-                        modifier = Modifier,
+                        modifier = Modifier.onClick {
+                            PageManager.goToInspector(coilFile)
+                        },
                         model = ImageRequest.Builder(LocalPlatformContext.current)
                             .data(coilFile)
                             .build(),
