@@ -23,7 +23,7 @@ fun GalleryView(state: GalleryState) {
             GalleryControls(galleryState)
         }
         Column(Modifier.weight(2f)) {
-            TImageGrid(galleryState.viewStore)
+            TImageGrid(galleryState.viewStore, state.lsgs)
         }
     }
 }

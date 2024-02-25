@@ -5,6 +5,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,11 +35,14 @@ import kotlin.math.E
 // A simple image grid.
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TImageGrid(tagStore: TagStore) {
+fun TImageGrid(tagStore: TagStore, lsgs: LazyStaggeredGridState) {
+
+    val scrollState = remember { lsgs }
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(256.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
+        state = scrollState
         //verticalArrangement = Arrangement.Center
     ) {
         val shownImages = tagStore.orderedFileList

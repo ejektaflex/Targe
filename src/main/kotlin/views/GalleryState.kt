@@ -1,9 +1,7 @@
 package views
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.runtime.*
 import data.AppPage
 import data.TagStore
 
@@ -13,7 +11,7 @@ class GalleryState(private val truthStore: TagStore) : ViewState<GalleryState> {
 
     var viewStore by mutableStateOf(truthStore)
     val filterTags = mutableStateMapOf<String, Unit>()
-
+    val lsgs by mutableStateOf(LazyStaggeredGridState())
 
 
     fun refreshViewStore() {
