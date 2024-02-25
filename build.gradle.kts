@@ -22,7 +22,7 @@ dependencies {
 
 
     //implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.compose.desktop:desktop-jvm-windows-x64:1.6.0-rc01")
+    implementation("org.jetbrains.compose.desktop:desktop-jvm-windows-x64:1.6.0-rc03")
     implementation(compose.material3)
 
     implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha04")

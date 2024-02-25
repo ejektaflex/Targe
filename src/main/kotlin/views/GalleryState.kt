@@ -10,6 +10,8 @@ class GalleryState(private val truthStore: TagStore) {
     var viewStore by mutableStateOf(truthStore)
     val filterTags = mutableStateMapOf<String, Unit>()
 
+
+
     fun refreshViewStore() {
         viewStore = if (filterTags.keys.isNotEmpty()) {
             truthStore.cloneWithEntireSubset(filterTags.keys)

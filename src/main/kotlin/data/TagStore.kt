@@ -2,6 +2,8 @@ package data
 
 import java.nio.file.Path
 
+typealias TagName = String
+typealias FileName = String
 
 data class TagStore(
     // Map of TagName to List<FilePath>
@@ -37,7 +39,7 @@ data class TagStore(
 
     fun filesMatchingTagSet(subsetTags: Set<String>): Set<String> {
         if (subsetTags.isEmpty()) {
-            return tagFiles.keys
+            return fileTags.keys
         }
         return subsetTags.mapNotNull { tagFiles[it]?.toSet() }.reduceOrNull { filesA, filesB -> filesA.intersect(filesB) } ?: emptySet()
     }
@@ -63,9 +65,11 @@ data class TagStore(
         get() = allFiles.sorted()
 
     fun genTagFrequencies(
+        subsetTags: Set<String> = emptySet(),
         comparator: Comparator<Pair<String, Int>> = compareBy({ -it.second }, { it.first })
     ): List<Pair<String, Int>> {
-        return tagFiles.map { it.key to it.value.size }.sortedWith(comparator)
+        val tf = genFilteredTagSet(subsetTags)
+        return tagFiles.filter { it.key in tf }.map { it.key to it.value.size }.sortedWith(comparator)
     }
 
     fun getTags(file: String): MutableSet<String> {

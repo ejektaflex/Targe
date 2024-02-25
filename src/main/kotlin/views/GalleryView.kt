@@ -43,14 +43,15 @@ fun GalleryControls(state: GalleryState) {
 
         FlowRow(Modifier.verticalScroll(rememberScrollState())
         ) {
-            for ((tag, count) in state.viewStore.genTagFrequencies(
-                //compareBy({ !(state.filterTags[it.first] ?: false) }, { -it.second }, { it.first })
-                compareBy({ -it.second }, { it.first })
-            )) {
+            val freqs = state.viewStore.genTagFrequencies()
+            for ((tag, count) in freqs) {
 
                 val stat = TagMapState(state.filterTags, tag)
+                val chipFreq = state.viewStore.genFilteredTagSet(state.filterTags.keys + tag).size
 
-                TFilterChip(stat, "$tag ($count)") { _, new ->
+                val sizeToShow = count
+
+                TFilterChip(stat, "$tag ($sizeToShow)") { _, new ->
                     if (new) {
                         state.filterTags[tag] = Unit
                         state.refreshViewStore()
