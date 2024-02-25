@@ -34,6 +34,11 @@ fun MainAppScaffolding() {
                 actions = {
                     IconButton(onClick = {
                         println("Doot!")
+                        PageManager.apply {
+                            if (stateStack.size > 1) {
+                                stateStack.removeLast()
+                            }
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Menu,

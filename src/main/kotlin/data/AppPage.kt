@@ -12,6 +12,6 @@ class AppPage<T : ViewState<T>>( val func: @Composable (T) -> Unit) {
 
     companion object {
         val GALLERY = AppPage<GalleryState>(func = @Composable { GalleryView(it) })
-        val INSPECTOR = AppPage<InspectState> { InspectView() }
+        val INSPECTOR = AppPage<InspectState> { InspectView(it) }
     }
 }

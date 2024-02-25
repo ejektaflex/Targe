@@ -1,7 +1,6 @@
 package views
 
 import AppConstants
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,12 +14,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import toCoilFile
-import java.io.File
 
 
 @Composable
-fun InspectView() {
+fun InspectView(state: InspectState) {
     Row(Modifier.padding(5.dp)) {
         Column(Modifier.weight(1f)) {
             Row(Modifier.padding(5.dp)) {
@@ -43,7 +40,7 @@ fun InspectView() {
             ) {
                 Box(Modifier.clip(RoundedCornerShape(5.dp))) {
                     AsyncImage(
-                        model = File("test_data/odas/1_v39/girl.png").toCoilFile(),
+                        model = state.image,
                         "Main Image",
                         contentScale = ContentScale.Fit
                     )
